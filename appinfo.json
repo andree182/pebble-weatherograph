@@ -1,0 +1,18 @@
+{
+  "uuid": "35754f91-7aac-46fd-aaac-8eaeda830167",
+  "shortName": "pebble-weather",
+  "longName": "pebble-weather",
+  "companyName": "Andrej Krutak",
+  "versionLabel": "0.1",
+  "sdkVersion": "3",
+  "targetPlatforms": ["aplite", "basalt", "chalk"],
+  "watchapp": {
+    "watchface": false
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": []
+  }
+}
