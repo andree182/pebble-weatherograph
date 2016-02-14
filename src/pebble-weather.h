@@ -1,17 +1,33 @@
 #ifndef PEBBLEWEATHER_H
 #define PEBBLEWEATHER_H
 
-enum {
-	sym_day,
-	sym_day_cloud,
-	sym_night,
-	sym_night_cloud,
-	sym_cloud,
-	sym_cloud_rain_light,
-	sym_cloud_rain_heavy,
-	sym_cloud_storm,
-	sym_cloud_snow_light,
-	sym_cloud_snow_heavy,
-};
+typedef enum {
+	W_ICON_CLEAR_DAY = 0,
+	W_ICON_FAIR_DAY,
+	W_ICON_PARTLY_CLOUDY_DAY,
+	W_ICON_MOSTLY_CLOUDY_DAY,
+	W_ICON_CLOUDY,
+	W_ICON_CLEAR_NIGHT,
+	W_ICON_FAIR_NIGHT,
+	W_ICON_PARTLY_CLOUDY_NIGHT,
+	W_ICON_WIND,
+	W_ICON_FOG,
+	W_ICON_DRIZZLE,
+	W_ICON_RAIN,
+	W_ICON_RAIN_SLEET,
+	W_ICON_SLEET,
+	W_ICON_SNOW_SLEET,
+	W_ICON_HEAVY_SNOW,
+	W_ICON_SNOW,
+	W_ICON_RAIN_SNOW,
+	W_ICON_RAIN_SUN,
+	W_ICON_THUNDER_SUN,
+	W_ICON_THUNDER,
+	W_ICON_COLD,
+	W_ICON_HOT,
+	W_ICON_PHONE_ERROR,
+	W_ICON_NOT_AVAILABLE,
+	W_ICON_COUNT
+} WeatherIcon;
 
 #endif // PEBBLEWEATHER_H
