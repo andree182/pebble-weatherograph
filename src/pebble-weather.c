@@ -146,7 +146,7 @@ static void draw_time_annotations(GContext *ctx, int w, int yOff, int h)
 	else
 		bigHour = false;
 
-	graphics_context_set_stroke_color(ctx, GColorDarkGray);
+	graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorDarkGray, GColorWhite));
 	graphics_context_set_antialiased(ctx, false);
 
 	for (i = startOffset; i < hoursCount;) {
@@ -197,21 +197,21 @@ static void redraw_display(Layer *layer, GContext *ctx)
 	draw_time_annotations(ctx, w, hGraphsOffset, h);
 	if (vMin < 0) {
 		/* zero temperature line */
-		graphics_context_set_stroke_color(ctx, GColorBlueMoon);
+		graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorBlueMoon, GColorWhite));
 		graphics_context_set_antialiased(ctx, false);
 		graphics_context_set_stroke_width(ctx, 4);
 
 		int zeroPos =	 + h * vMax / (vMax - vMin);
 		graphics_draw_line(ctx, GPoint(0, zeroPos), GPoint(w, zeroPos));
 	}
-	graphics_context_set_stroke_color(ctx, GColorLightGray);
+	graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorLightGray, GColorWhite));
 	graphics_context_set_antialiased(ctx, false);
 	graphics_context_set_stroke_width(ctx, 1);
 	graphics_draw_line(ctx, GPoint(0, hGraphsOffset), GPoint(w, hGraphsOffset));
 	graphics_draw_line(ctx, GPoint(0, hGraphsOffset + h / 2), GPoint(w, hGraphsOffset + h / 2));
 
 	/* precipitation graph */
-	graphics_context_set_fill_color(ctx, GColorBlue);
+	graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorBlue, GColorWhite));
 	graphics_context_set_antialiased(ctx, false);
 	graphics_context_set_stroke_width(ctx, 0);
 	for (i = 0; i < hoursCount; i++) {
@@ -226,7 +226,7 @@ static void redraw_display(Layer *layer, GContext *ctx)
 	}
 
 	/* temperature graph */
-	graphics_context_set_stroke_color(ctx, GColorOrange);
+	graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorOrange, GColorWhite));
 	graphics_context_set_antialiased(ctx, true);
 	graphics_context_set_stroke_width(ctx, 2);
 	for (i = 0; i < hoursCount - 1; i++) {
@@ -267,7 +267,12 @@ static void window_load(Window *window)
 
 static void window_unload(Window *window)
 {
+	unsigned i;
+
 	layer_destroy(displayLayer);
+	for (i = 0; i < sizeof(hourlyIcon) / sizeof(hourlyIcon[0]); i++) {
+		gbitmap_destroy(hourlyIcon[i]);
+	}
 	gbitmap_destroy(hourlyIcons);
 }
 
