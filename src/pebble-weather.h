@@ -1,7 +1,9 @@
 #ifndef PEBBLEWEATHER_H
 #define PEBBLEWEATHER_H
 
+// unused
 typedef enum {
+#if 0
 	W_ICON_CLEAR_DAY = 0,
 	W_ICON_FAIR_DAY,
 	W_ICON_PARTLY_CLOUDY_DAY,
@@ -28,6 +30,24 @@ typedef enum {
 	W_ICON_PHONE_ERROR,
 	W_ICON_NOT_AVAILABLE,
 	W_ICON_COUNT
+#else
+	W_ICON_COUNT = 5 * 5
+#endif
 } WeatherIcon;
+
+enum {
+	COMM_TYPE = 0,
+	COMM_OFFSET = 1,
+	COMM_DATA = 2,
+};
+
+enum {
+	TYPE_FIRST_TIME = 0,
+	TYPE_TEMPERATURE = 1,
+	TYPE_PRECIPITATION = 2,
+	TYPE_SKY = 3,
+	TYPE_EOF = 4,
+	TYPE_ERROR = 5,
+};
 
 #endif // PEBBLEWEATHER_H

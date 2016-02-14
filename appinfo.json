@@ -7,10 +7,12 @@
 	"sdkVersion": "3",
 	"targetPlatforms": ["aplite", "basalt", "chalk"],
 	"watchapp": {
-			"watchface": false
+        "watchface": false
 	},
 	"appKeys": {
-			"dummy": 0
+        "COMM_TYPE": 0,
+        "COMM_OFFSET": 1,
+        "COMM_DATA": 2
 	},
 	"resources": {
 		"media": [

@@ -1,2 +1,4 @@
 src/pebble-weather.c
 src/pebble-weather.h
+src/js/pebble-js-app.js
+appinfo.json
