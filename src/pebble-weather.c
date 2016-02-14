@@ -2,7 +2,7 @@
 #include "pebble-weather.h"
 
 #define valuesCount (55)
-static time_t firstTime = 1455364800;
+static time_t firstTime = 13 * 3600;
 static float temperature[valuesCount] = {
 	4.2687073,4.748932,5.13443,5.2689514,4.895172,3.9354553,2.9615784,2.5785217,1.8629456,2.2106018,1.8207092,1.832428,1.5890198,1.6986389,1.8890686,2.0956116,2.1898499,2.4928284,2.8443909,3.3570862,4.0487366,5.00235,6.4552307,8.059235,8.662506,8.902252,9.085358,9.007965,7.8226624,7.9862366,6.9215393,5.955719,5.0292053,6.224762,2.3175354,4.8246155,4.8768616,2.8734436,3.1700745,3.1373596,3.1341858,2.9283752,2.514801,2.2118225,2.5509338,3.405182,4.065338,4.6544495,5.072418,5.1732483,4.8451233,4.6004944,4.014801,3.2306213,2.6029358
 };
@@ -102,8 +102,7 @@ static void draw_temp_annotations(
 /* Draw each 6 hours */
 static void draw_time_annotations(GContext *ctx, int w, int yOff, int h)
 {
-	time_t curTime = firstTime;
-	tm *t = localtime(&curTime);
+	int curHour = firstTime / 3600;
 	const int interval = 6;
 	int startOffset;
 	bool bigHour;
@@ -111,16 +110,15 @@ static void draw_time_annotations(GContext *ctx, int w, int yOff, int h)
 	char buf[32];
 	int w6h = 6 * w / valuesCount;
 
-	if ((t->tm_hour % interval) == 0) {
+	if ((curHour % interval) == 0) {
 		startOffset = 0;
 	} else {
-		int timeToNext = interval - (t->tm_hour % interval);
+		int timeToNext = interval - (curHour % interval);
 		startOffset = timeToNext;
-		curTime += startOffset * 3600;
+		curHour += startOffset;
 	}
 
-	t = localtime(&curTime);
-	if (t->tm_hour % (interval * 2) == 0)
+	if ((curHour % (interval * 2)) == 0)
 		bigHour = true;
 	else
 		bigHour = false;
@@ -136,8 +134,7 @@ static void draw_time_annotations(GContext *ctx, int w, int yOff, int h)
 			GPoint(pos, yOff), GPoint(pos, yOff + h)
 		);
 
-		t = localtime(&curTime);
-		snprintf(buf, sizeof(buf), "%02dh", t->tm_hour);
+		snprintf(buf, sizeof(buf), "%02dh", curHour);
 		graphics_draw_text(
 			ctx, buf, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
 			GRect(pos - w6h / 2, yOff - 20, w6h, 20),
@@ -145,7 +142,7 @@ static void draw_time_annotations(GContext *ctx, int w, int yOff, int h)
 		);
 
 		bigHour = !bigHour;
-		curTime += interval * 3600;
+		curHour = (curHour + interval) % 24;
 		i += interval;
 	}
 }
