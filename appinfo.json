@@ -1,7 +1,7 @@
 {
 	"uuid": "35754f91-7aac-46fd-aaac-8eaeda830167",
-    "shortName": "weatherograph",
-    "longName": "Weather'O'Graph",
+    "shortName": "Weather-O-Graph",
+    "longName": "Weather-O-Graph",
 	"companyName": "Andrej Krutak",
 	"versionLabel": "0.1",
 	"sdkVersion": "3",
@@ -20,6 +20,12 @@
 				"file": "images/20x20.png",
 				"name": "ICON_20X20",
 				"type": "bitmap"
+			},
+			{
+				"menuIcon": true,
+				"type": "bitmap",
+				"name": "IMAGE_MENU_ICON",
+				"file": "images/menu_icon.png"
 			}
 		]
 	}

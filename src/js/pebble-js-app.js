@@ -37,8 +37,10 @@ var aladin2icon = [];
 aladin2icon["wi_cloud"] = W_ICON_CLOUDY;
 aladin2icon["wi_day"] = W_ICON_CLEAR_DAY;
 aladin2icon["wi_day_cloud"] = W_ICON_PARTLY_CLOUDY_DAY;
+aladin2icon["wi_day_cloud_rain"] = W_ICON_DRIZZLE;
 aladin2icon["wi_night"] = W_ICON_CLEAR_NIGHT;
 aladin2icon["wi_night_cloud"] = W_ICON_PARTLY_CLOUDY_NIGHT;
+aladin2icon["wi_night_cloud_rain"] = W_ICON_DRIZZLE;
 aladin2icon["wi_cloud_rain_light"] = W_ICON_DRIZZLE;
 aladin2icon["wi_cloud_rain"] = W_ICON_RAIN;
 aladin2icon["wi_cloud_snow_light"] = W_ICON_SNOW;
@@ -90,8 +92,10 @@ function parseAladinSky(output, type, sky)
     for (i = 0; i < sky.length; i++) {
         if (sky[i] in aladin2icon)
             rv.push(aladin2icon[sky[i]]);
-        else
+        else {
+            console.log(sky[i]);
             rv.push(W_ICON_NOT_AVAILABLE);
+        }
     }
     output.push({'COMM_TYPE': type, 'COMM_DATA': rv});
 }
