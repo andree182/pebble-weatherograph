@@ -14,7 +14,8 @@ static int sky[MAX_HOURS_COUNT];
 
 static Window *window;
 static Layer *displayLayer;
-static int curPos = 0;
+static int curPos = 0, maxPos;
+const int posSteps = 8;
 static int screenWidth;
 GBitmap *hourlyIcons, *hourlyIcon[W_ICON_COUNT];
 
@@ -113,7 +114,7 @@ static void set_pos(int pos)
 
 	layer_set_frame(
 		displayLayer,
-		GRect(-(curPos * bounds.size.w), 0, bounds.size.w * 3, bounds.size.h)
+		GRect(-curPos, 0, bounds.size.w * 3, bounds.size.h)
 	);
 }
 
@@ -124,12 +125,18 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context)
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context)
 {
-	set_pos((curPos + 2) % 3); /* ~= curPos - 1 */
+	int pos = curPos - maxPos / posSteps;
+	if (pos < 0)
+		pos = maxPos;
+	set_pos(pos);
 }
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context)
 {
-	set_pos((curPos + 1) % 3);
+	int pos = curPos + maxPos / posSteps;
+	if (pos > maxPos)
+		pos = 0;
+	set_pos(pos);
 }
 
 static void click_config_provider(void *context)
@@ -359,6 +366,7 @@ static void window_load(Window *window)
 		);
 	}
 
+	maxPos = screenWidth * 2;
 	displayLayer = layer_create(
 		GRect(0, 0, screenWidth * 3, bounds.size.h)
 	);
