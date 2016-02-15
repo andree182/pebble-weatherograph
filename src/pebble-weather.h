@@ -48,6 +48,7 @@ enum {
 	TYPE_SKY = 3,
 	TYPE_EOF = 4,
 	TYPE_ERROR = 5,
+	TYPE_DATA_COUNT = 6,
 };
 
 #endif // PEBBLEWEATHER_H

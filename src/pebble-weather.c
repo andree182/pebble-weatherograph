@@ -4,6 +4,7 @@
 #define MAX_HOURS_COUNT (55)
 
 static bool haveData = false;
+static int dataCount = 1, curData = 0;
 static time_t firstTime;
 static int hoursCount;
 static float temperature[MAX_HOURS_COUNT];
@@ -16,7 +17,7 @@ static int curPos = 0;
 static int screenWidth;
 GBitmap *hourlyIcons, *hourlyIcon[W_ICON_COUNT];
 
-static void getFloatData(float *dest, int offset, int len, uint8_t *data)
+static void get_float_data(float *dest, int offset, int len, uint8_t *data)
 {
 	int i;
 	if (offset + len > MAX_HOURS_COUNT)
@@ -41,7 +42,7 @@ static void getFloatData(float *dest, int offset, int len, uint8_t *data)
 		hoursCount = offset + len;
 }
 
-static void getSkyData(int *sky, int len, uint8_t *data)
+static void get_sky_data(int *sky, int len, uint8_t *data)
 {
 	int i;
 	if (len > MAX_HOURS_COUNT)
@@ -58,26 +59,30 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 	Tuple *commData = dict_find(iterator, COMM_DATA);
 
 	switch (commType->value->int8) {
+	case TYPE_DATA_COUNT:
+		dataCount = commData->value->int8;
+		break;
 	case TYPE_FIRST_TIME:
 		firstTime = commData->value->int8 * 3600;
 		break;
 	case TYPE_TEMPERATURE:
-		getFloatData(temperature, commOffset->value->int8, commData->length / 2, commData->value->data);
+		get_float_data(temperature, commOffset->value->int8, commData->length / 2, commData->value->data);
 		break;
 	case TYPE_PRECIPITATION:
-		getFloatData(precipitation, commOffset->value->int8, commData->length / 2, commData->value->data);
+		get_float_data(precipitation, commOffset->value->int8, commData->length / 2, commData->value->data);
 		break;
 	case TYPE_SKY:
-		getSkyData(sky, commData->length, commData->value->data);
+		get_sky_data(sky, commData->length, commData->value->data);
 		break;
 	case TYPE_EOF:
 		haveData = true;
-		layer_mark_dirty(window_get_root_layer(window));
 		break;
 	case TYPE_ERROR:
 		// TODO: ???
 		break;
 	}
+	curData++;
+	layer_mark_dirty(window_get_root_layer(window));
 }
 
 static void inbox_dropped_callback(AppMessageResult reason, void *context) {
@@ -263,7 +268,7 @@ static void redraw_display(Layer *layer, GContext *ctx)
 		);
 		graphics_draw_bitmap_in_rect(
 			ctx, hourlyIcons,
-			GRect(bounds.size.w / 3 / 2 - 50, bounds.size.h / 2 - 50, 100, 100)
+			GRect(bounds.size.w / 3 / 2 - 50, bounds.size.h / 2 - 50, 100, 100 * curData / dataCount)
 		);
 		return;
 	}
@@ -284,7 +289,7 @@ static void redraw_display(Layer *layer, GContext *ctx)
 		graphics_context_set_antialiased(ctx, false);
 		graphics_context_set_stroke_width(ctx, 4);
 
-		int zeroPos =	 + h * vMax / (vMax - vMin);
+		int zeroPos = hGraphsOffset + h * vMax / (vMax - vMin);
 		graphics_draw_line(ctx, GPoint(0, zeroPos), GPoint(w, zeroPos));
 	}
 	graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorLightGray, GColorWhite));

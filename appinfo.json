@@ -1,7 +1,7 @@
 {
 	"uuid": "35754f91-7aac-46fd-aaac-8eaeda830167",
-	"shortName": "pebble-weather",
-	"longName": "pebble-weather",
+    "shortName": "weatherograph",
+    "longName": "Weather'O'Graph",
 	"companyName": "Andrej Krutak",
 	"versionLabel": "0.1",
 	"sdkVersion": "3",
