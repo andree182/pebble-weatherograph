@@ -1,3 +1,21 @@
+/*
+This file is part of Weather-O-Graph.
+Copyright 2016 Andrej Krutak
+
+Weather-O-Graph is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Weather-O-Graph is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with boxyface.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 TYPE_FIRST_TIME = 0;
 TYPE_TEMPERATURE = 1;
 TYPE_PRECIPITATION = 2;
