@@ -5,6 +5,7 @@ TYPE_SKY = 3;
 TYPE_EOF = 4;
 TYPE_ERROR = 5;
 TYPE_DATA_COUNT = 6;
+TYPE_PRECIPITATION_SNOW = 7;
 
 W_ICON_CLEAR_DAY = 0;
 W_ICON_FAIR_DAY = 1;
@@ -103,6 +104,7 @@ function parseAladin(json) {
 
     parseFloatArray(output, TYPE_TEMPERATURE, json.parameterValues.TEMPERATURE);
     parseFloatArray(output, TYPE_PRECIPITATION, json.parameterValues.PRECIPITATION_TOTAL);
+    parseFloatArray(output, TYPE_PRECIPITATION_SNOW, json.parameterValues.PRECIPITATION_SNOW);
     parseAladinSky(output, TYPE_SKY, json.weatherIconNames);
     output.push({'COMM_TYPE': TYPE_EOF});
 

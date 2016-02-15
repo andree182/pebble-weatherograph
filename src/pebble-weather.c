@@ -9,6 +9,7 @@ static time_t firstTime;
 static int hoursCount;
 static float temperature[MAX_HOURS_COUNT];
 static float precipitation[MAX_HOURS_COUNT];
+static float precipitation_snow[MAX_HOURS_COUNT];
 static int sky[MAX_HOURS_COUNT];
 
 static Window *window;
@@ -70,6 +71,9 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 		break;
 	case TYPE_PRECIPITATION:
 		get_float_data(precipitation, commOffset->value->int8, commData->length / 2, commData->value->data);
+		break;
+	case TYPE_PRECIPITATION_SNOW:
+		get_float_data(precipitation_snow, commOffset->value->int8, commData->length / 2, commData->value->data);
 		break;
 	case TYPE_SKY:
 		get_sky_data(sky, commData->length, commData->value->data);
@@ -299,16 +303,25 @@ static void redraw_display(Layer *layer, GContext *ctx)
 	graphics_draw_line(ctx, GPoint(0, hGraphsOffset + h / 2), GPoint(w, hGraphsOffset + h / 2));
 
 	/* precipitation graph */
-	graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorBlue, GColorWhite));
 	graphics_context_set_antialiased(ctx, false);
 	graphics_context_set_stroke_width(ctx, 0);
 	for (i = 0; i < hoursCount; i++) {
+		graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorBlue, GColorWhite));
 		graphics_fill_rect(
 			ctx,
 			GRect(
 				w * (2 * i - 1) / (2 * hoursCount),
 				hGraphsOffset + (1 - precipitation[i]) * h,
 				w / hoursCount, precipitation[i] * h
+			), 0, GCornerNone
+		);
+		graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorWhite, GColorWhite));
+		graphics_fill_rect(
+			ctx,
+			GRect(
+				w * (2 * i - 1) / (2 * hoursCount),
+				hGraphsOffset + (1 - precipitation_snow[i]) * h,
+				w / hoursCount, precipitation_snow[i] * h
 			), 0, GCornerNone
 		);
 	}
