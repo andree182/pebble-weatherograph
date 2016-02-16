@@ -276,6 +276,14 @@ static void draw_time_annotations(GContext *ctx, int w, int yOff, int h)
 	/* TODO: draw current time */
 }
 
+static inline int clamp(int max, int v)
+{
+	if (v > max)
+		return max;
+	else
+		return v;
+}
+
 static void redraw_display(Layer *layer, GContext *ctx)
 {
 	int i;
@@ -319,7 +327,14 @@ static void redraw_display(Layer *layer, GContext *ctx)
 		graphics_context_set_stroke_width(ctx, 4);
 
 		int zeroPos = hGraphsOffset + h * vMax / (vMax - vMin);
+#if PBL_BW
+		const int gap = 60;
+		graphics_draw_line(ctx, GPoint(0 * w / 3 + gap, zeroPos), GPoint(1 * w / 3, zeroPos));
+		graphics_draw_line(ctx, GPoint(1 * w / 3 + gap, zeroPos), GPoint(2 * w / 3, zeroPos));
+		graphics_draw_line(ctx, GPoint(2 * w / 3 + gap, zeroPos), GPoint(3 * w / 3, zeroPos));
+#else
 		graphics_draw_line(ctx, GPoint(0, zeroPos), GPoint(w, zeroPos));
+#endif
 	}
 	graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorLightGray, GColorWhite));
 	graphics_context_set_antialiased(ctx, false);
@@ -331,22 +346,27 @@ static void redraw_display(Layer *layer, GContext *ctx)
 	graphics_context_set_antialiased(ctx, false);
 	graphics_context_set_stroke_width(ctx, 0);
 	for (i = 0; i < hoursCount; i++) {
+		int v;
+
 		graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorBlue, GColorWhite));
+		// 4mm/h is heavy rain, so let's clamp it around there
+		v = clamp(h, precipitation[i] * h / 6);
 		graphics_fill_rect(
 			ctx,
 			GRect(
 				w * (2 * i - 1) / (2 * hoursCount),
-				hGraphsOffset + (1 - precipitation[i]) * h,
-				w / hoursCount, precipitation[i] * h
+				hGraphsOffset + h - v,
+				w / hoursCount - 1, v
 			), 0, GCornerNone
 		);
 		graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorWhite, GColorWhite));
+		v = clamp(h, precipitation_snow[i] * h / 6);
 		graphics_fill_rect(
 			ctx,
 			GRect(
 				w * (2 * i - 1) / (2 * hoursCount),
-				hGraphsOffset + (1 - precipitation_snow[i]) * h,
-				w / hoursCount, precipitation_snow[i] * h
+				hGraphsOffset + h - v,
+				w / hoursCount - 1, v
 			), 0, GCornerNone
 		);
 	}
@@ -366,6 +386,12 @@ static void redraw_display(Layer *layer, GContext *ctx)
 	draw_temp_annotations(ctx, 0 * screenWidth, w, h, hGraphsOffset, vMin, vMax);
 	draw_temp_annotations(ctx, 1 * screenWidth, w, h, hGraphsOffset, vMin, vMax);
 	draw_temp_annotations(ctx, 2 * screenWidth, w, h, hGraphsOffset, vMin, vMax);
+
+	/* right border */
+	graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorRed, GColorWhite));
+	graphics_context_set_antialiased(ctx, false);
+	graphics_context_set_stroke_width(ctx, 5);
+	graphics_draw_line(ctx, GPoint(w, 0), GPoint(w, bounds.size.h));
 }
 
 static void window_load(Window *window)
