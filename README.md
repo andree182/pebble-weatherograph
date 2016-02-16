@@ -7,6 +7,7 @@ following services:
 
 ![Aplite screenshot](/../screenshots/aplite.png?raw=true "Aplite screenshot")
 ![Basalt screenshot](/../screenshots/basalt.png?raw=true "Basalt screenshot")
+![Chalk screenshot](/../screenshots/chalk.png?raw=true "Chalk screenshot")
 
 Currently only in °C, 24h time format. Patches welcome .-)
 
