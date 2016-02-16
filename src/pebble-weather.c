@@ -32,10 +32,11 @@ static int sky[MAX_HOURS_COUNT];
 
 static Window *window;
 static Layer *displayLayer;
-static int curPos = 0, maxPos;
+static int curPos, maxPos;
 const int posSteps = 8;
 static int screenWidth;
 static GBitmap *hourlyIcons, *hourlyIcon[W_ICON_COUNT];
+static int sceneW, sceneH;
 
 static void get_float_data(float *dest, int offset, int len, uint8_t *data)
 {
@@ -130,9 +131,10 @@ static void set_pos(int pos)
 	if (!haveData)
 		return;
 
-	from_frame = GRect(-curPos, 0, bounds.size.w * 3, bounds.size.h);
+	from_frame = GRect(-curPos, bounds.size.h / 2 - sceneH / 2, sceneW, sceneH);
 	curPos = pos;
-	to_frame = GRect(-curPos, 0, bounds.size.w * 3, bounds.size.h);
+	to_frame = from_frame;
+	to_frame.origin.x = -curPos;
 
 	s_property_animation = property_animation_create_layer_frame(displayLayer, &from_frame, &to_frame);
 	animation_schedule((Animation*) s_property_animation);
@@ -140,22 +142,36 @@ static void set_pos(int pos)
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context)
 {
+#ifdef PBL_ROUND
+	set_pos(-screenWidth / 3);
+#else
 	set_pos(0);
+#endif
 }
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context)
 {
 	int pos = curPos - maxPos / posSteps;
+#ifdef PBL_ROUND
+	if (pos < -screenWidth / 3)
+		pos = maxPos + screenWidth / 3;
+#else
 	if (pos < 0)
 		pos = maxPos;
+#endif
 	set_pos(pos);
 }
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context)
 {
 	int pos = curPos + maxPos / posSteps;
+#ifdef PBL_ROUND
+	if (pos > maxPos + screenWidth / 3)
+		pos = -screenWidth / 3;
+#else
 	if (pos > maxPos)
 		pos = 0;
+#endif
 	set_pos(pos);
 }
 
@@ -405,9 +421,18 @@ static void window_load(Window *window)
 	GRect bounds = layer_get_bounds(windowLayer);
 	unsigned i;
 	const int size = 20;
+	sceneH = bounds.size.h;
+
+	window_set_background_color(window, GColorBlack);
 
 	screenWidth = bounds.size.w;
-	
+	sceneW = screenWidth * 3;
+	curPos = 0;
+#ifdef PBL_ROUND
+	// let's make it more narrow
+	sceneH = bounds.size.h * 2 / 3;
+#endif
+
 	hourlyIcons = gbitmap_create_with_resource(RESOURCE_ID_ICON_20X20);
 	for (i = 0; i < sizeof(hourlyIcon) / sizeof(hourlyIcon[0]); i++) {
 		hourlyIcon[i] =  gbitmap_create_as_sub_bitmap(
@@ -417,7 +442,7 @@ static void window_load(Window *window)
 
 	maxPos = screenWidth * 2;
 	displayLayer = layer_create(
-		GRect(0, 0, screenWidth * 3, bounds.size.h)
+		GRect(curPos, bounds.size.h / 2 - sceneH / 2, sceneW, sceneH)
 	);
 	layer_set_update_proc(displayLayer, redraw_display);
 	layer_add_child(windowLayer, displayLayer);
