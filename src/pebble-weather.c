@@ -35,7 +35,7 @@ static Layer *displayLayer;
 static int curPos = 0, maxPos;
 const int posSteps = 8;
 static int screenWidth;
-GBitmap *hourlyIcons, *hourlyIcon[W_ICON_COUNT];
+static GBitmap *hourlyIcons, *hourlyIcon[W_ICON_COUNT];
 
 static void get_float_data(float *dest, int offset, int len, uint8_t *data)
 {
@@ -124,16 +124,18 @@ static void set_pos(int pos)
 {
 	Layer *windowLayer = window_get_root_layer(window);
 	GRect bounds = layer_get_bounds(windowLayer);
+	PropertyAnimation *s_property_animation;
+	GRect from_frame, to_frame;
 
 	if (!haveData)
 		return;
 
+	from_frame = GRect(-curPos, 0, bounds.size.w * 3, bounds.size.h);
 	curPos = pos;
+	to_frame = GRect(-curPos, 0, bounds.size.w * 3, bounds.size.h);
 
-	layer_set_frame(
-		displayLayer,
-		GRect(-curPos, 0, bounds.size.w * 3, bounds.size.h)
-	);
+	s_property_animation = property_animation_create_layer_frame(displayLayer, &from_frame, &to_frame);
+	animation_schedule((Animation*) s_property_animation);
 }
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context)
@@ -317,16 +319,19 @@ static void redraw_display(Layer *layer, GContext *ctx)
 			vMax = temperature[i];
 	}
 	vDiff = vMax - vMin;
+	// let's not ever divide by zero
+	if (vDiff == 0)
+		vDiff = 0.001;
 
 	draw_icons(ctx, w, hGraphsOffset);
 	draw_time_annotations(ctx, w, hGraphsOffset, h);
-	if (vMin < 0) {
+	if ((vMax > 0) && (vMin < 0)) {
 		/* zero temperature line */
 		graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorBlueMoon, GColorWhite));
 		graphics_context_set_antialiased(ctx, false);
 		graphics_context_set_stroke_width(ctx, 4);
 
-		int zeroPos = hGraphsOffset + h * vMax / (vMax - vMin);
+		int zeroPos = hGraphsOffset + h * vMax / vDiff;
 #if PBL_BW
 		const int gap = 60;
 		graphics_draw_line(ctx, GPoint(0 * w / 3 + gap, zeroPos), GPoint(1 * w / 3, zeroPos));
