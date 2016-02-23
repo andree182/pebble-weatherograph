@@ -122,8 +122,11 @@ function parseAladinSky(output, type, sky)
 function parseAladin(json) {
     var output = [];
 
-    var d = new Date(json.forecastTimeIso);
-    output.push({'COMM_TYPE': TYPE_FIRST_TIME, 'COMM_DATA': d.getHours()});
+    // Doesn't work on iOS, so for now let's go dumber way...
+    // var d = new Date(json.forecastTimeIso);
+    // var hours = d.getHours();
+    var hours = parseInt(json.forecastTimeIso.substr(11, 2));
+    output.push({'COMM_TYPE': TYPE_FIRST_TIME, 'COMM_DATA': hours});
 
     parseFloatArray(output, TYPE_TEMPERATURE, json.parameterValues.TEMPERATURE);
     parseFloatArray(output, TYPE_PRECIPITATION, json.parameterValues.PRECIPITATION_TOTAL);
