@@ -37,6 +37,7 @@ const int posSteps = 8;
 static int screenWidth;
 static GBitmap *hourlyIcons, *hourlyIcon[W_ICON_COUNT];
 static int sceneW, sceneH;
+static char infoStr[64] = "Initialization...";
 
 static void get_float_data(float *dest, int offset, int len, uint8_t *data)
 {
@@ -85,27 +86,36 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 		break;
 	case TYPE_FIRST_TIME:
 		firstTime = commData->value->int8 * 3600;
+		curData++;
 		break;
 	case TYPE_TEMPERATURE:
 		get_float_data(temperature, commOffset->value->int8, commData->length / 2, commData->value->data);
+		curData++;
 		break;
 	case TYPE_PRECIPITATION:
 		get_float_data(precipitation, commOffset->value->int8, commData->length / 2, commData->value->data);
+		curData++;
 		break;
 	case TYPE_PRECIPITATION_SNOW:
 		get_float_data(precipitation_snow, commOffset->value->int8, commData->length / 2, commData->value->data);
+		curData++;
 		break;
 	case TYPE_SKY:
 		get_sky_data(sky, commData->length, commData->value->data);
+		curData++;
 		break;
 	case TYPE_EOF:
 		haveData = true;
 		break;
-	case TYPE_ERROR:
-		// TODO: ???
+	case TYPE_STATUS:
+		if (commData->length > sizeof(infoStr)) {
+			strncpy(infoStr, "Bad string received", sizeof(infoStr));
+		} else {
+			memcpy(infoStr, commData->value->data, commData->length);
+			infoStr[commData->length] = '\0';
+		}
 		break;
 	}
-	curData++;
 	layer_mark_dirty(window_get_root_layer(window));
 }
 
@@ -317,8 +327,8 @@ static void redraw_display(Layer *layer, GContext *ctx)
 
 	if (!haveData) {
 		graphics_draw_text(
-			ctx, " Loading...", fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
-			GRect(0, 0, bounds.size.w, 30),
+			ctx, infoStr, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
+			GRect(12, 0, bounds.size.w, 30),
 			GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL
 		);
 		graphics_draw_bitmap_in_rect(

@@ -21,7 +21,7 @@ TYPE_TEMPERATURE = 1;
 TYPE_PRECIPITATION = 2;
 TYPE_SKY = 3;
 TYPE_EOF = 4;
-TYPE_ERROR = 5;
+TYPE_STATUS = 5;
 TYPE_DATA_COUNT = 6;
 TYPE_PRECIPITATION_SNOW = 7;
 
@@ -55,11 +55,12 @@ var aladin2icon = [];
 aladin2icon["wi_cloud"] = W_ICON_CLOUDY;
 aladin2icon["wi_day"] = W_ICON_CLEAR_DAY;
 aladin2icon["wi_day_cloud"] = W_ICON_PARTLY_CLOUDY_DAY;
-aladin2icon["wi_day_cloud_rain"] = W_ICON_DRIZZLE;
+aladin2icon["wi_day_cloud_rain"] = W_ICON_RAIN;
 aladin2icon["wi_night"] = W_ICON_CLEAR_NIGHT;
 aladin2icon["wi_night_cloud"] = W_ICON_PARTLY_CLOUDY_NIGHT;
-aladin2icon["wi_night_cloud_rain"] = W_ICON_DRIZZLE;
+aladin2icon["wi_night_cloud_rain"] = W_ICON_RAIN;
 aladin2icon["wi_cloud_rain_light"] = W_ICON_DRIZZLE;
+aladin2icon["wi_cloud_rain_medium"] = W_ICON_RAIN;
 aladin2icon["wi_cloud_rain"] = W_ICON_RAIN;
 aladin2icon["wi_cloud_snow_light"] = W_ICON_SNOW;
 aladin2icon["wi_cloud_snow"] = W_ICON_HEAVY_SNOW;
@@ -152,32 +153,44 @@ function sendToApp(e)
     );
 }
 
+function notifyApp(str)
+{
+    Pebble.sendAppMessage({'COMM_TYPE': TYPE_STATUS, 'COMM_DATA': str},
+        function(e) { /* success */ },
+        function(e) { console.log('Error sending message to Pebble!'); }
+    );
+}
+
 function locationSuccess(pos) {
     var url = 'http://aladinonline.androworks.org/get_data.php?latitude=' +
               pos.coords.latitude + '&longitude=' + pos.coords.longitude;
 
+    notifyApp("Forecast...");
     xhrRequest(url, 'GET',
-    function(responseText) {
-//        responseText = sampleData;
+        function(responseText) {
+            // responseText = sampleData;
 
-        var json = JSON.parse(responseText);
-        tosend = parseAladin(json);
+            var json = JSON.parse(responseText);
+            tosend = parseAladin(json);
 
-        sendToApp(0);
-    }
-  );
+            notifyApp("Loading...");
+            sendToApp(0);
+        }
+    );
 }
 
 function locationError(err) {
     console.log('Error requesting location!');
+    notifyApp("Location error");
 }
 
 function getWeather() {
-  navigator.geolocation.getCurrentPosition(
-    locationSuccess,
-    locationError,
-    {timeout: 15000, maximumAge: 60000}
-  );
+    notifyApp("Location...");
+    navigator.geolocation.getCurrentPosition(
+        locationSuccess,
+        locationError,
+        {timeout: 15000, maximumAge: 60000}
+    );
 //    var x = {coords: {latitude: 50.15, longitude: 14.45}};
 //    locationSuccess(x);
 }
