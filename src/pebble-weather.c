@@ -37,7 +37,7 @@ const int posSteps = 8;
 static int screenWidth;
 static GBitmap *hourlyIcons, *hourlyIcon[W_ICON_COUNT];
 static int sceneW, sceneH;
-static char infoStr[64] = "Initialization...";
+static char infoStr[64] = "communication";
 
 static void get_float_data(float *dest, int offset, int len, uint8_t *data)
 {
@@ -80,6 +80,16 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 	Tuple *commOffset = dict_find(iterator, COMM_OFFSET);
 	Tuple *commData = dict_find(iterator, COMM_DATA);
 
+	if ((commType->value->int8 != TYPE_EOF) &&
+		((commData == NULL) || (commData->value == NULL))
+	) {
+		APP_LOG(
+			APP_LOG_LEVEL_ERROR,
+			"Got unexpected NULL data for %d!", commType->value->int8
+		);
+		goto exit;
+	}
+
 	switch (commType->value->int8) {
 	case TYPE_DATA_COUNT:
 		dataCount = commData->value->int8;
@@ -116,6 +126,8 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 		}
 		break;
 	}
+
+exit:
 	layer_mark_dirty(window_get_root_layer(window));
 }
 
@@ -327,13 +339,18 @@ static void redraw_display(Layer *layer, GContext *ctx)
 
 	if (!haveData) {
 		graphics_draw_text(
-			ctx, infoStr, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
+			ctx, "Loading...", fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
 			GRect(12, 0, bounds.size.w, 30),
 			GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL
 		);
 		graphics_draw_bitmap_in_rect(
 			ctx, hourlyIcons,
 			GRect(bounds.size.w / 3 / 2 - 50, bounds.size.h / 2 - 50, 100, 100 * curData / dataCount)
+		);
+		graphics_draw_text(
+			ctx, infoStr, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
+			GRect(0, bounds.size.h - 30, screenWidth, 30),
+			GTextOverflowModeTrailingEllipsis, GTextAlignmentRight, NULL
 		);
 		return;
 	}
@@ -353,19 +370,12 @@ static void redraw_display(Layer *layer, GContext *ctx)
 	draw_time_annotations(ctx, w, hGraphsOffset, h);
 	if ((vMax > 0) && (vMin < 0)) {
 		/* zero temperature line */
-		graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorBlueMoon, GColorWhite));
+		graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorBlueMoon, GColorLightGray));
 		graphics_context_set_antialiased(ctx, false);
 		graphics_context_set_stroke_width(ctx, 4);
 
 		int zeroPos = hGraphsOffset + h * vMax / vDiff;
-#if PBL_BW
-		const int gap = 60;
-		graphics_draw_line(ctx, GPoint(0 * w / 3 + gap, zeroPos), GPoint(1 * w / 3, zeroPos));
-		graphics_draw_line(ctx, GPoint(1 * w / 3 + gap, zeroPos), GPoint(2 * w / 3, zeroPos));
-		graphics_draw_line(ctx, GPoint(2 * w / 3 + gap, zeroPos), GPoint(3 * w / 3, zeroPos));
-#else
-		graphics_draw_line(ctx, GPoint(0, zeroPos), GPoint(w, zeroPos));
-#endif
+		graphics_fill_rect(ctx, GRect(0, zeroPos - 2, w, 4), 0, GCornerNone);
 	}
 	graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorLightGray, GColorWhite));
 	graphics_context_set_antialiased(ctx, false);
@@ -379,7 +389,7 @@ static void redraw_display(Layer *layer, GContext *ctx)
 	for (i = 0; i < hoursCount; i++) {
 		int v;
 
-		graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorBlue, GColorWhite));
+		graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorBlue, GColorLightGray));
 		// 4mm/h is heavy rain, so let's clamp it around there
 		v = clamp(h, precipitation[i] * h / 6);
 		graphics_fill_rect(
@@ -461,7 +471,10 @@ static void window_load(Window *window)
 	app_message_register_inbox_dropped(inbox_dropped_callback);
 	app_message_register_outbox_failed(outbox_failed_callback);
 	app_message_register_outbox_sent(outbox_sent_callback);
-	app_message_open(80, 16);
+#if APP_MESSAGE_INBOX_SIZE_MINIMUM < 120
+#error "need to adjust STEP in parseFloatArray in JS"
+#endif
+	app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, 16);
 }
 
 static void window_unload(Window *window)

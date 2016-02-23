@@ -80,7 +80,7 @@ var xhrRequest = function (url, type, callback) {
 
 function parseFloatArray(output, type, arr)
 {
-    var STEP = 8;
+    var STEP = 40;
 
     for (i = 0; i < arr.length; i += STEP) {
         var rvPart = [];
@@ -141,14 +141,12 @@ function parseAladin(json) {
 function sendToApp(e)
 {
     if (tosend.length == 0) {
-//        console.log('All sent!');
+        console.log('All data sent!');
         return;
     }
 
     var v = tosend[0];
     tosend.shift();
-
-//    console.log(JSON.stringify(v));
 
     Pebble.sendAppMessage(v,
         sendToApp,
@@ -168,15 +166,14 @@ function locationSuccess(pos) {
     var url = 'http://aladinonline.androworks.org/get_data.php?latitude=' +
               pos.coords.latitude + '&longitude=' + pos.coords.longitude;
 
-    notifyApp("Forecast...");
+    notifyApp("forecast");
     xhrRequest(url, 'GET',
         function(responseText) {
             // responseText = sampleData;
-
             var json = JSON.parse(responseText);
             tosend = parseAladin(json);
 
-            notifyApp("Loading...");
+            notifyApp("data");
             sendToApp(0);
         }
     );
@@ -184,11 +181,11 @@ function locationSuccess(pos) {
 
 function locationError(err) {
     console.log('Error requesting location!');
-    notifyApp("Location error");
+    notifyApp("location error!");
 }
 
 function getWeather() {
-    notifyApp("Location...");
+    notifyApp("location");
     navigator.geolocation.getCurrentPosition(
         locationSuccess,
         locationError,
