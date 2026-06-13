@@ -516,10 +516,15 @@ static void window_load(Window *window)
 		currentProvider = 0;
 	}
 
+#ifdef PBL_ROUND
+	providerLayer = text_layer_create(GRect(bounds.size.w / 2 - 40, bounds.size.h - 25, 80, 20));
+	text_layer_set_text_alignment(providerLayer, GTextAlignmentCenter);
+#else
 	providerLayer = text_layer_create(GRect(bounds.size.w - 85, bounds.size.h - 22, 80, 20));
+	text_layer_set_text_alignment(providerLayer, GTextAlignmentRight);
+#endif
 	text_layer_set_text_color(providerLayer, GColorWhite);
 	text_layer_set_background_color(providerLayer, GColorClear);
-	text_layer_set_text_alignment(providerLayer, GTextAlignmentRight);
 	text_layer_set_font(providerLayer, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
 	text_layer_set_text(providerLayer, PROVIDER_NAMES[currentProvider]);
 	layer_add_child(windowLayer, text_layer_get_layer(providerLayer));
