@@ -3,7 +3,7 @@
     "shortName": "Weather-O-Graph",
     "longName": "Weather-O-Graph",
 	"companyName": "Andrej Krutak",
-	"versionLabel": "0.4",
+	"versionLabel": "1.0",
 	"sdkVersion": "3",
 	"targetPlatforms": ["aplite", "basalt", "chalk"],
 	"watchapp": {
@@ -12,7 +12,8 @@
 	"appKeys": {
         "COMM_TYPE": 0,
         "COMM_OFFSET": 1,
-        "COMM_DATA": 2
+        "COMM_DATA": 2,
+        "PROVIDER": 3
 	},
 	"resources": {
 		"media": [

@@ -1,9 +1,9 @@
 # Weather-O-Graph (for Pebble)
 This app displays current weather forecast in a graph form, from one of the
-following services:
+following services (switch by bottom button long press):
 
 * aladin (Czech republic)
-* TODO: yr.no (Europe)
+* yr.no (Europe)
 
 ![Aplite screenshot](/../screenshots/aplite.png?raw=true "Aplite screenshot")
 ![Basalt screenshot](/../screenshots/basalt.png?raw=true "Basalt screenshot")

@@ -39,6 +39,12 @@ static GBitmap *hourlyIcons, *hourlyIcon[W_ICON_COUNT];
 static int sceneW, sceneH;
 static char infoStr[64] = "communication";
 
+#define PERSIST_KEY_PROVIDER 100
+static int currentProvider = 0;
+static const char* PROVIDER_NAMES[] = { "yr.no", "aladin" };
+static TextLayer *providerLayer;
+
+
 static void get_float_data(float *dest, int offset, int len, uint8_t *data)
 {
 	int i;
@@ -81,7 +87,7 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 	Tuple *commData = dict_find(iterator, COMM_DATA);
 
 	if ((commType->value->int8 != TYPE_EOF) &&
-		((commData == NULL) || (commData->value == NULL))
+		(commData == NULL)
 	) {
 		APP_LOG(
 			APP_LOG_LEVEL_ERROR,
@@ -184,6 +190,19 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context)
 	set_pos(pos);
 }
 
+static void request_weather(int provider)
+{
+	DictionaryIterator *iter;
+	app_message_outbox_begin(&iter);
+	if (iter == NULL) {
+		APP_LOG(APP_LOG_LEVEL_ERROR, "Error preparing outbox message!");
+		return;
+	}
+
+	dict_write_int8(iter, PROVIDER, provider);
+	app_message_outbox_send();
+}
+
 static void down_click_handler(ClickRecognizerRef recognizer, void *context)
 {
 	int pos = curPos + maxPos / posSteps;
@@ -197,11 +216,26 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context)
 	set_pos(pos);
 }
 
+static void down_long_click_handler(ClickRecognizerRef recognizer, void *context)
+{
+	currentProvider = (currentProvider + 1) % 2;
+	persist_write_int(PERSIST_KEY_PROVIDER, currentProvider);
+	
+	text_layer_set_text(providerLayer, PROVIDER_NAMES[currentProvider]);
+
+	haveData = false;
+	curData = 0;
+	layer_mark_dirty(window_get_root_layer(window));
+
+	request_weather(currentProvider);
+}
+
 static void click_config_provider(void *context)
 {
 	window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
 	window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
 	window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
+	window_long_click_subscribe(BUTTON_ID_DOWN, 1000, down_long_click_handler, NULL);
 }
 
 void printFloat(char *str, int strSize, float val, const char *suffix)
@@ -349,8 +383,8 @@ static void redraw_display(Layer *layer, GContext *ctx)
 		);
 		graphics_draw_text(
 			ctx, infoStr, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
-			GRect(0, bounds.size.h - 30, screenWidth, 30),
-			GTextOverflowModeTrailingEllipsis, GTextAlignmentRight, NULL
+			GRect(10, bounds.size.h - 30, screenWidth - 20, 30),
+			GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL
 		);
 		return;
 	}
@@ -475,6 +509,20 @@ static void window_load(Window *window)
 #error "need to adjust STEP in parseFloatArray in JS"
 #endif
 	app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, 16);
+
+	if (persist_exists(PERSIST_KEY_PROVIDER)) {
+		currentProvider = persist_read_int(PERSIST_KEY_PROVIDER);
+	} else {
+		currentProvider = 0;
+	}
+
+	providerLayer = text_layer_create(GRect(bounds.size.w - 85, bounds.size.h - 22, 80, 20));
+	text_layer_set_text_color(providerLayer, GColorWhite);
+	text_layer_set_background_color(providerLayer, GColorClear);
+	text_layer_set_text_alignment(providerLayer, GTextAlignmentRight);
+	text_layer_set_font(providerLayer, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
+	text_layer_set_text(providerLayer, PROVIDER_NAMES[currentProvider]);
+	layer_add_child(windowLayer, text_layer_get_layer(providerLayer));
 }
 
 static void window_unload(Window *window)
@@ -482,6 +530,7 @@ static void window_unload(Window *window)
 	unsigned i;
 
 	app_message_deregister_callbacks();
+	text_layer_destroy(providerLayer);
 	layer_destroy(displayLayer);
 	for (i = 0; i < sizeof(hourlyIcon) / sizeof(hourlyIcon[0]); i++) {
 		gbitmap_destroy(hourlyIcon[i]);
