@@ -1,0 +1,52 @@
+{
+  "name": "pebble-weatherograph",
+  "author": "Andrej Krutak",
+  "version": "1.0.0",
+  "keywords": [
+    "pebble-app"
+  ],
+  "private": true,
+  "dependencies": {},
+  "pebble": {
+    "displayName": "Weather-O-Graph",
+    "uuid": "35754f91-7aac-46fd-aaac-8eaeda830167",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk",
+      "diorite",
+      "emery",
+      "flint",
+      "gabbro",
+      "asterix",
+      "obelix",
+      "getafix"
+    ],
+    "watchapp": {
+      "watchface": false
+    },
+    "messageKeys": {
+      "COMM_TYPE": 0,
+      "COMM_OFFSET": 1,
+      "COMM_DATA": 2,
+      "PROVIDER": 3
+    },
+    "resources": {
+      "media": [
+        {
+          "file": "images/20x20.png",
+          "name": "ICON_20X20",
+          "type": "bitmap"
+        },
+        {
+          "menuIcon": true,
+          "type": "bitmap",
+          "name": "IMAGE_MENU_ICON",
+          "file": "images/menu_icon.png"
+        }
+      ]
+    }
+  }
+}
