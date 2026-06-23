@@ -347,7 +347,19 @@ static void draw_time_annotations(GContext *ctx, int w, int yOff, int h)
 		i += interval;
 	}
 
-	/* TODO: draw current time */
+	time_t now = time(NULL);
+	struct tm *now_tm = localtime(&now);
+	int now_hour = now_tm->tm_hour;
+	int idx = now_hour - (firstTime / 3600);
+	if (idx < 0) {
+		idx += 24;
+	}
+	if (idx >= 0 && idx < hoursCount) {
+		int pos = idx * w / hoursCount;
+		for (int y = yOff; y < yOff + h; y += 3) {
+			graphics_draw_pixel(ctx, GPoint(pos, y));
+		}
+	}
 }
 
 static inline int clamp(int max, int v)
