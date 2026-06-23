@@ -358,8 +358,6 @@ function locationSuccess(pos) {
         url = 'https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=' + lat + '&lon=' + lon;
     }
 
-    console.log(url);
-
     notifyApp("forecast");
     xhrRequest(url, 'GET',
         function(responseText) {
@@ -386,14 +384,25 @@ function locationSuccess(pos) {
 
 function locationError(err) {
     console.log('Error requesting location!');
-    notifyApp("location error!");
+    notifyApp("location error, retrying...");
+    
 }
 
 function getWeather() {
+    var retryCount = 0;
+    var MAX_RETRIES = 3;
+
     notifyApp("location");
     navigator.geolocation.getCurrentPosition(
         locationSuccess,
-        locationError,
-        {timeout: 15000, maximumAge: 60000}
+        function(error) {
+            if (retryCount < MAX_RETRIES) {
+                retryCount++;
+                setTimeout(getWeather, 1000); 
+            } else {
+                locationError(error);
+            }
+        },
+        {timeout: 5000, maximumAge: 60000}
     );
 }
